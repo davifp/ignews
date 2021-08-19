@@ -1,8 +1,7 @@
+import { query as q } from 'faunadb'
+
 import NextAuth from 'next-auth'
 import Providers from 'next-auth/providers'
-
-import { query as q } from 'faunadb';
-
 import { fauna } from '../../../services/fauna';
 
 export default NextAuth({
@@ -14,17 +13,15 @@ export default NextAuth({
     }),
   ],
   callbacks: {
-
     async session(session) {
       try {
-
         const userActiveSubscription = await fauna.query(
           q.Get(
             q.Intersection([
               q.Match(
                 q.Index('subscription_by_user_ref'),
                 q.Select(
-                  'ref',
+                  "ref",
                   q.Get(
                     q.Match(
                       q.Index('user_by_email'),
@@ -35,17 +32,17 @@ export default NextAuth({
               ),
               q.Match(
                 q.Index('subscription_by_status'),
-                'active'
+                "active"
               )
-            ]
-            )
+            ])
           )
         )
+
         return {
           ...session,
           activeSubscription: userActiveSubscription
-        };
-      } catch {
+        }
+      } catch (err) {
         return {
           ...session,
           activeSubscription: null
@@ -62,7 +59,7 @@ export default NextAuth({
               q.Exists(
                 q.Match(
                   q.Index('user_by_email'),
-                  q.Casefold(user.email)
+                  q.Casefold(email)
                 )
               )
             ),
@@ -73,7 +70,7 @@ export default NextAuth({
             q.Get(
               q.Match(
                 q.Index('user_by_email'),
-                q.Casefold(user.email)
+                q.Casefold(email)
               )
             )
           )
@@ -83,6 +80,7 @@ export default NextAuth({
       } catch {
         return false;
       }
+
     }
   }
 })
